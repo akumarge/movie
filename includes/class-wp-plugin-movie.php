@@ -76,6 +76,9 @@ class Wp_Plugin_Movie {
 		$this->define_admin_hooks();
 		$this->define_public_hooks();
 
+		$this->register_taxonomy();
+		$this->register_custom_post_type();
+		$this->register_custom_meta_box();
 	}
 
 	/**
@@ -118,6 +121,21 @@ class Wp_Plugin_Movie {
 		 * side of the site.
 		 */
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-wp-plugin-movie-public.php';
+
+		/**
+		 * Registers the Taxonomies for the Movie hub.
+		 */
+		require plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wp-plugin-movie-taxonomy.php';
+
+		/**
+		 * The class responsible for defining the cpt.
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wp-plugin-movie-cpt.php';
+
+		/**
+		 * The class responsible for defining Custom meta boxes.
+		 */
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-wp-plugin-movie-custom-meta-box.php';
 
 		$this->loader = new Wp_Plugin_Movie_Loader();
 
@@ -170,6 +188,50 @@ class Wp_Plugin_Movie {
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 
+	}
+	/**
+	 * Register all of the hooks related to the public-facing functionality
+	 * of the plugin.
+	 *
+	 * @since    1.0.0
+	 * @access   private
+	 */
+	private function register_taxonomy() {
+		$plugin_taxonomy = new Wp_Movie_Taxonomy();
+
+		$this->loader->add_action( 'init', $plugin_taxonomy, 'register_movielist_taxonomy' );
+		$this->loader->add_action( 'init', $plugin_taxonomy, 'register_director_taxonomy' );
+		$this->loader->add_action( 'init', $plugin_taxonomy, 'register_actor_taxonomy' );
+		
+	}
+
+	/**
+	 * Register all of the hooks related to the public-facing functionality
+	 * of the plugin.
+	 *
+	 * @since    1.0.0
+	 * @access   private
+	 */
+	private function register_custom_meta_box() {
+		$plugin_meta_box = new Wp_Movie_Meta_Box();
+
+		$this->loader->add_action( 'add_meta_boxes', $plugin_meta_box, 'add_movie_custom_meta_box' );
+		$this->loader->add_action( 'save_post', $plugin_meta_box, "save_custom_meta_box", 10, 3 );
+		
+	}
+
+	/**
+	 * Register all of the hooks related to the public-facing functionality
+	 * of the plugin.
+	 *
+	 * @since    1.0.0
+	 * @access   private
+	 */
+	private function register_custom_post_type() {
+		$plugin_custom_cpt = new Wp_Movie_Cpt();
+
+		$this->loader->add_action( 'init', $plugin_custom_cpt, 'movie_create_custom_post_type' );
+		
 	}
 
 	/**
